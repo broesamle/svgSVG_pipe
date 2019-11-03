@@ -17,3 +17,36 @@ The project wants to facilitate such import/export processes in graphics-intense
 -------------------------------
 
 Inject svg content into existing SVG documents, keeping their structure intact.
+
+
+Requirements and Installation
+-----------------------------
+
+
+Currently under development using:
+
+* Python 3.7
+* Pytest 5.2.2.
+
+
+Tests
+-----
+
+
+### run tests
+
+```
+pytest
+```
+
+
+### visual inspection of test results
+
+To get a file output of the SVG content involved in the testing:
++ Set environment variable `SVGPIPE_TEST_SVG_OUT` to point to the desired output directory.
++ Make sure the directory/folder exists.
+
+After the test run, for each svg injection test there will be three SVG files:
++ `XXXX_test.svg` (before the injection)
++ `XXXX_result.svg` (what was actually the case after the injection)
++ `XXXX_expect.svg` (what should be the case after the injection)
