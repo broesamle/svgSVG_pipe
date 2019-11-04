@@ -2,6 +2,7 @@ import codecs
 import io
 import os
 import re
+import traceback
 import xml.dom.minidom as minidom
 
 import pytest
@@ -41,6 +42,13 @@ def assert_xml_equiv(result, expected):
         assert got == exp, ("XML mismatch. \nGOT:\n{:s}\n\n"
                             "EXPECTED:\n{:s}").format(got, exp)
 
+# cf. https://stackoverflow.com/questions/251464/
+def get_this_fname():
+    return traceback.extract_stack(None, 2)[0][2]
+
+def get_caller_fname():
+    return traceback.extract_stack(None, 3)[0][2]
+
 class Test_ExistingDoc:
     svgdocument1 = """<?xml version='1.0' encoding='utf8'?>
 <svg xmlns="http://www.w3.org/2000/svg"
@@ -67,22 +75,21 @@ class Test_SVGDocInScale:
     TEM1 = """<?xml version='1.0' encoding='utf-8'?>
 <svg version="1.2" baseProfile="tiny" xmlns="http://www.w3.org/2000/svg"
  x="0px" y="0px" width="90.71px" height="68.03px" viewBox="0 10 90.71 68.03">
-<g id="Layer_B">
-</g>
-<g id="Layer_A">
-<rect x="59.527" y="17.008" fill="#8080C0" width="25.512" height="39.685"/>%s
-</g>
+<g id="Layer_B"></g>
+<g id="Layer_A">%s</g>
 </svg>
 """
 
-    def _prepare(testname, content_test, content_expect, write_if):
+    def _prepare(content_test, content_expect, write_if):
+        testname = get_caller_fname()
         write_if(testname+_TEST_SUFFIX+_SVG_EXT, content_test)
         write_if(testname+_EXPECT_SUFFIX+_SVG_EXT, content_expect)
         infile = io.StringIO(content_test)
         svgdoc = INJ.SVGDocInScale(infile)
         return svgdoc
 
-    def _save_result(testname, svgdoc, content_expect, write_if):
+    def _save_result(svgdoc, content_expect, write_if):
+        testname = get_caller_fname()
         outfile = io.BytesIO()
         svgdoc.save(outfile)
         content_result = outfile.getvalue().decode("utf8")
@@ -92,15 +99,17 @@ class Test_SVGDocInScale:
                  content_result)
 
     def test_inject_into_layer(self, write_if_svgout):
-        testname = __name__
-        content_test = Test_SVGDocInScale.TEM1 % ("")
+        content_test = Test_SVGDocInScale.TEM1 % (
+            '<rect x="59.527" y="17.008"'
+            ' width="25.512" height="39.685" fill="#8080C0" />')
         content_expect = Test_SVGDocInScale.TEM1 % (
+            '<rect x="59.527" y="17.008"'
+            ' width="25.512" height="39.685" fill="#8080C0" />'
             '<rect x="0" y="10" width="90.71" height="68.03"'
             ' fill="#00CC44" opacity="0.4" />'
             '<line x1="0" y1="10" x2="90.71" y2="78.03"'
             ' stroke="black" />')
-        svgdoc =Test_SVGDocInScale._prepare(testname,
-                                            content_test,
+        svgdoc =Test_SVGDocInScale._prepare(content_test,
                                             content_expect,
                                             write_if_svgout)
         world_horiz = (-10,20)
@@ -127,6 +136,6 @@ class Test_SVGDocInScale:
                 ' stroke="black" />').format(x1doc, y1doc,
                                              x2doc, y2doc)
         injp.inject(line)
-        Test_SVGDocInScale._save_result(testname, svgdoc,
+        Test_SVGDocInScale._save_result(svgdoc,
                                         content_expect,
-                                        write_if_svgout )
+                                        write_if_svgout)
