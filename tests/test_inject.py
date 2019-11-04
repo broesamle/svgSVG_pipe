@@ -43,10 +43,10 @@ def assert_xml_equiv(result, expected):
                             "EXPECTED:\n{:s}").format(got, exp)
 
 # cf. https://stackoverflow.com/questions/251464/
-def get_this_fname():
+def this_fname():
     return traceback.extract_stack(None, 2)[0][2]
 
-def get_caller_fname():
+def caller_fname():
     return traceback.extract_stack(None, 3)[0][2]
 
 class Test_ExistingDoc:
@@ -81,7 +81,7 @@ class Test_SVGDocInScale:
 """
 
     def _prepare(content_test, content_expect, write_if):
-        testname = get_caller_fname()
+        testname = caller_fname()
         write_if(testname+_TEST_SUFFIX+_SVG_EXT, content_test)
         write_if(testname+_EXPECT_SUFFIX+_SVG_EXT, content_expect)
         infile = io.StringIO(content_test)
@@ -89,7 +89,7 @@ class Test_SVGDocInScale:
         return svgdoc
 
     def _save_result(svgdoc, content_expect, write_if):
-        testname = get_caller_fname()
+        testname = caller_fname()
         outfile = io.BytesIO()
         svgdoc.save(outfile)
         content_result = outfile.getvalue().decode("utf8")
@@ -139,3 +139,22 @@ class Test_SVGDocInScale:
         Test_SVGDocInScale._save_result(svgdoc,
                                         content_expect,
                                         write_if_svgout)
+
+    def test_inject_into_rect(self, write_if_svgout):
+        testname = this_fname()
+        content_test = Test_SVGDocInScale.TEM1 % (
+            '<rect x="59.527" y="17.008"'
+            ' width="25.512" height="39.685" fill="#8080C0" />')
+        content_expect = Test_SVGDocInScale.TEM1 % (
+            '<rect x="59.527" y="17.008"'
+            ' width="25.512" height="39.685" fill="#8080C0" />'
+            '<rect x="59.527" y="17.008"'
+            ' width="25.512" height="39.685"'
+            ' fill="#C0C080" opacity="0.4"/>'
+            '<line x1="59.527" y1="17.008" x2="85.039" y2="56.693"'
+            ' stroke="black" />')
+        write_if_svgout(testname+_TEST_SUFFIX+_SVG_EXT,
+                        content_test)
+        write_if_svgout(testname+_EXPECT_SUFFIX+_SVG_EXT,
+                        content_expect)
+        assert False
