@@ -16,18 +16,36 @@ _SVG_EXT = ".svg"
 
 @pytest.fixture(scope="module")
 def write_if_svgout():
+    html_opener = """<!DOCTYPE html>
+<html><head>
+<title>svg&gt;&gt;SVG inject: Test Panorama</title>
+<style>iframe { border:none; }</style>
+</head>
+<body style="font-family: monospace; border: 0px;">
+"""
+
     try:
         _SVG_OUT = os.environ['SVGPIPE_TEST_SVG_OUT']
-        print("Test SVG output:", _SVG_OUT)
-        def _write_if_svgout(filename, content):
+        _panorama_svgfile = codecs.open(os.path.join(_SVG_OUT, "panorama.html"),
+                            mode='w', encoding="utf8")
+        _panorama_svgfile.write(html_opener)
+        def _write_if_svgout(filename, content, newtest=None):
+            if newtest is not None:
+                _panorama_svgfile.write("\n<br><b>%s</b><br>\n" % newtest)
+            item = '<iframe src="{:s}"></iframe>\n'.format(filename)
+            _panorama_svgfile.write(item)
             f = codecs.open(os.path.join(_SVG_OUT, filename),
                             mode='w', encoding="utf8")
             f.write(content)
     except KeyError:
+        _panorama_svgfile = None
         def _write_if_svgout(filename, content):
             pass
 
-    return _write_if_svgout
+    yield _write_if_svgout
+    if _panorama_svgfile:
+        _panorama_svgfile.write('</body></html>')
+        _panorama_svgfile.close()
 
 def normalise_xml(xmlstr):
     xmlstr = xmlstr.replace("\n", " ")
@@ -82,7 +100,9 @@ class Test_SVGDocInScale:
 
     def _prepare(content_test, content_expect, write_if):
         testname = caller_fname()
-        write_if(testname+_TEST_SUFFIX+_SVG_EXT, content_test)
+        write_if(testname+_TEST_SUFFIX+_SVG_EXT,
+                 content_test,
+                 newtest=testname)
         write_if(testname+_EXPECT_SUFFIX+_SVG_EXT, content_expect)
         infile = io.StringIO(content_test)
         svgdoc = INJ.SVGDocInScale(infile)
@@ -143,18 +163,35 @@ class Test_SVGDocInScale:
     def test_inject_into_rect(self, write_if_svgout):
         testname = this_fname()
         content_test = Test_SVGDocInScale.TEM1 % (
-            '<rect x="59.527" y="17.008"'
+            '<rect id="Rect_9" x="59.527" y="17.008"'
             ' width="25.512" height="39.685" fill="#8080C0" />')
-        content_expect = Test_SVGDocInScale.TEM1 % (
-            '<rect x="59.527" y="17.008"'
-            ' width="25.512" height="39.685" fill="#8080C0" />'
-            '<rect x="59.527" y="17.008"'
-            ' width="25.512" height="39.685"'
-            ' fill="#C0C080" opacity="0.4"/>'
-            '<line x1="59.527" y1="17.008" x2="85.039" y2="56.693"'
-            ' stroke="black" />')
-        write_if_svgout(testname+_TEST_SUFFIX+_SVG_EXT,
-                        content_test)
-        write_if_svgout(testname+_EXPECT_SUFFIX+_SVG_EXT,
-                        content_expect)
-        assert False
+        newrect = ('<rect x="59.527" y="17.008" width="25.512"'
+                   ' height="39.685" fill="#C0C080" opacity="0.4" />')
+        newline = ('<line x1="59.527" y1="17.008" x2="85.039"'
+                   ' y2="56.693" stroke="black" />')
+        after_injection = (
+            '<g id="INJ_Rect_9">'
+            # The inject rect gets semi-transparent after injection
+            '<rect id="Rect_9" x="59.527" y="17.008" width="25.512"'
+            ' height="39.685" fill="#8080C0" opacity="0.452"/>' +
+            newrect+newline + '</g>')
+        content_expect = Test_SVGDocInScale.TEM1 % (after_injection)
+        svgdoc = Test_SVGDocInScale._prepare(content_test,
+                                             content_expect,
+                                             write_if_svgout)
+        world_left, world_width = (59.527, 25.512)
+        world_right = world_left + world_width
+        world_top, world_height = (17.008, 39.685)
+        world_bottom = world_top + world_height
+        injp = svgdoc.get_rect_injectpoint("Rect_9",
+                                           (world_left, world_right),
+                                           (world_top, world_bottom))
+        x1doc = injp.h2x(world_left)
+        y1doc = injp.v2y(world_top)
+        x2doc = injp.h2x(world_right)
+        y2doc = injp.v2y(world_bottom)
+        injp.inject(newrect)
+        injp.inject(newline)
+        Test_SVGDocInScale._save_result(svgdoc,
+                                        content_expect,
+                                        write_if_svgout)
