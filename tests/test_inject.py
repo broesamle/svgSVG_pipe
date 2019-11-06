@@ -109,18 +109,18 @@ class Test_SVGDocInScale:
             ' fill="#00CC44" opacity="0.4" />'
             '<line x1="0" y1="10" x2="90.71" y2="78.03"'
             ' stroke="black" />')
-        svgdoc =Test_SVGDocInScale._prepare(content_test,
-                                            content_expect,
-                                            write_if_svgout)
+        svgdoc = Test_SVGDocInScale._prepare(content_test,
+                                             content_expect,
+                                             write_if_svgout)
         world_horiz = (-10,20)
         world_left, world_right = world_horiz
         world_width = world_right - world_left
         world_vert = (0,40)
         world_top, world_bottom  = world_vert
         world_height = world_bottom - world_top
-        injp =  svgdoc.get_layer_injectpoint("Layer_A",
-                                             world_horiz,
-                                             world_vert)
+        injp = svgdoc.get_layer_injectpoint("Layer_A",
+                                            world_horiz,
+                                            world_vert)
         x1doc = injp.h2x(world_left)
         y1doc = injp.v2y(world_top)
         x2doc = injp.h2x(world_right)
