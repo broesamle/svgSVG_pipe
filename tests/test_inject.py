@@ -92,7 +92,7 @@ class Test_ExistingDoc:
 class Test_SVGDocInScale:
     TEM1 = """<?xml version='1.0' encoding='utf-8'?>
 <svg version="1.2" baseProfile="tiny" xmlns="http://www.w3.org/2000/svg"
- x="0px" y="0px" width="90.71px" height="68.03px" viewBox="0 10 90.71 68.03">
+ x="0px" y="0px" width="90.71px" height="68.03px" viewBox="%s">
 <g id="Layer_B"></g>
 <g id="Layer_A">%s</g>
 </svg>
@@ -119,10 +119,11 @@ class Test_SVGDocInScale:
                  content_result)
 
     def test_inject_into_layer(self, write_if_svgout):
-        content_test = Test_SVGDocInScale.TEM1 % (
+        vbox = '0 10 90.71 68.03'
+        content_test = Test_SVGDocInScale.TEM1 % (vbox,
             '<rect x="59.527" y="17.008"'
             ' width="25.512" height="39.685" fill="#8080C0" />')
-        content_expect = Test_SVGDocInScale.TEM1 % (
+        content_expect = Test_SVGDocInScale.TEM1 % (vbox,
             '<rect x="59.527" y="17.008"'
             ' width="25.512" height="39.685" fill="#8080C0" />'
             '<rect x="0" y="10" width="90.71" height="68.03"'
@@ -161,7 +162,8 @@ class Test_SVGDocInScale:
                                         write_if_svgout)
 
     def test_inject_into_rect(self, write_if_svgout):
-        content_test = Test_SVGDocInScale.TEM1 % (
+        vbox = '0 10 90.71 68.03'
+        content_test = Test_SVGDocInScale.TEM1 % (vbox,
             '<rect id="Rect_9" x="59.527" y="17.008"'
             ' width="25.512" height="39.685" fill="#8080C0" />')
         newrect = ('<rect x="59.527" y="17.008" width="25.512"'
@@ -174,7 +176,8 @@ class Test_SVGDocInScale:
             '<rect id="Rect_9" x="59.527" y="17.008" width="25.512"'
             ' height="39.685" fill="#8080C0" opacity="0.452"/>' +
             newrect+newline + '</g>')
-        content_expect = Test_SVGDocInScale.TEM1 % (after_injection)
+        content_expect = Test_SVGDocInScale.TEM1 % (vbox,
+                                                    after_injection)
         svgdoc = Test_SVGDocInScale._prepare(content_test,
                                              content_expect,
                                              write_if_svgout)
@@ -191,6 +194,31 @@ class Test_SVGDocInScale:
         y2doc = injp.v2y(world_bottom)
         injp.inject(newrect)
         injp.inject(newline)
+        Test_SVGDocInScale._save_result(svgdoc,
+                                        content_expect,
+                                        write_if_svgout)
+
+    def test_inject_points_polygon(self, write_if_svgout):
+        vbox = '0 2100 1200 300'
+        polygon = ('<polygon id="Polygon1" fill="#12211C"'
+                   ' points="931,2169.304 817.627,2169.285'
+                   ' 770.96,2169.285 667.874,2307.31 539.317,2191.927'
+                   ' 229.269,2186.255 165,2169.304 57.23,2292.125 '
+                   ' 57.23,2452.75 930.978,2452.75"/>')
+        polygon_after = (
+                   '<polygon id="Polygon1" fill="#12211C"'
+                   ' points="900.54,2000 931,2169.304 817.627,2169.285'
+                   ' 770.96,2169.285 667.874,2307.31 539.317,2191.927'
+                   ' 229.269,2186.255 165,2169.304 57.23,2292.125 '
+                   ' 57.23,2452.75 930.978,2452.75 870,2600.338"/>')
+        content_test = Test_SVGDocInScale.TEM1 % (vbox, polygon)
+        content_expect = Test_SVGDocInScale.TEM1 % (vbox, polygon_after)
+        svgdoc = Test_SVGDocInScale._prepare(content_test,
+                                             content_expect,
+                                             write_if_svgout)
+        injp = svgdoc.get_polygon_injectpoint("Polygon1")
+        injp.inject_points((900.54, 2000), INJ.INJ_POS_BEFORE)
+        injp.inject_points((870, 2600.338), INJ.INJ_POS_AFTER)
         Test_SVGDocInScale._save_result(svgdoc,
                                         content_expect,
                                         write_if_svgout)
