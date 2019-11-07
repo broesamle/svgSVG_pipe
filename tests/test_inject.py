@@ -198,25 +198,48 @@ class Test_SVGDocInScale:
                                         content_expect,
                                         write_if_svgout)
 
+    _POLY_TEM = '<%s id="Poly1" fill="#2E2" stroke="#122" stroke-width="10" points="%s"/>'
+    _POLY_POINTS = ('931,2169.304 817.627,2169.285'
+                    ' 770.96,2169.285 667.874,2307.31 539.317,2191.927'
+                    ' 229.269,2186.255 165,2169.304 57.23,2292.125 '
+                    ' 57.23,2452.75 930.978,2452.75')
+
     def test_inject_points_polygon(self, write_if_svgout):
         vbox = '0 2100 1200 300'
-        polygon = ('<polygon id="Polygon1" fill="#12211C"'
-                   ' points="931,2169.304 817.627,2169.285'
-                   ' 770.96,2169.285 667.874,2307.31 539.317,2191.927'
-                   ' 229.269,2186.255 165,2169.304 57.23,2292.125 '
-                   ' 57.23,2452.75 930.978,2452.75"/>')
-        polygon_after = (
-                   '<polygon id="Polygon1" fill="#12211C"'
-                   ' points="900.54,2000 931,2169.304 817.627,2169.285'
-                   ' 770.96,2169.285 667.874,2307.31 539.317,2191.927'
-                   ' 229.269,2186.255 165,2169.304 57.23,2292.125 '
-                   ' 57.23,2452.75 930.978,2452.75 870,2600.338"/>')
-        content_test = Test_SVGDocInScale.TEM1 % (vbox, polygon)
-        content_expect = Test_SVGDocInScale.TEM1 % (vbox, polygon_after)
+        poly = Test_SVGDocInScale._POLY_TEM % ("polygon",
+                                  Test_SVGDocInScale._POLY_POINTS)
+        poly_after = Test_SVGDocInScale._POLY_TEM % ("polygon",
+                                  '900.54,2000 ' +
+                                  Test_SVGDocInScale._POLY_POINTS +
+                                  ' 870,2600.338')
+
+        content_test = Test_SVGDocInScale.TEM1 % (vbox, poly)
+        content_expect = Test_SVGDocInScale.TEM1 % (vbox, poly_after)
         svgdoc = Test_SVGDocInScale._prepare(content_test,
                                              content_expect,
                                              write_if_svgout)
-        injp = svgdoc.get_polygon_injectpoint("Polygon1")
+        injp = svgdoc.get_polygon_injectpoint("Poly1")
+        injp.inject_points((900.54, 2000), INJ.INJ_POS_BEFORE)
+        injp.inject_points((870, 2600.338), INJ.INJ_POS_AFTER)
+        Test_SVGDocInScale._save_result(svgdoc,
+                                        content_expect,
+                                        write_if_svgout)
+
+    def test_inject_points_polyline(self, write_if_svgout):
+        vbox = '0 2100 1200 300'
+        poly = Test_SVGDocInScale._POLY_TEM % ("polyline",
+                                  Test_SVGDocInScale._POLY_POINTS)
+        poly_after = Test_SVGDocInScale._POLY_TEM % ("polyline",
+                                  '900.54,2000 ' +
+                                  Test_SVGDocInScale._POLY_POINTS +
+                                  ' 870,2600.338')
+
+        content_test = Test_SVGDocInScale.TEM1 % (vbox, poly)
+        content_expect = Test_SVGDocInScale.TEM1 % (vbox, poly_after)
+        svgdoc = Test_SVGDocInScale._prepare(content_test,
+                                             content_expect,
+                                             write_if_svgout)
+        injp = svgdoc.get_poly_injectpoint("Poly1")
         injp.inject_points((900.54, 2000), INJ.INJ_POS_BEFORE)
         injp.inject_points((870, 2600.338), INJ.INJ_POS_AFTER)
         Test_SVGDocInScale._save_result(svgdoc,
