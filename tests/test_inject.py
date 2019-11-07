@@ -39,7 +39,7 @@ def write_if_svgout():
             f.write(content)
     except KeyError:
         _panorama_svgfile = None
-        def _write_if_svgout(filename, content):
+        def _write_if_svgout(filename, content, newtest=None):
             pass
 
     yield _write_if_svgout
@@ -161,7 +161,6 @@ class Test_SVGDocInScale:
                                         write_if_svgout)
 
     def test_inject_into_rect(self, write_if_svgout):
-        testname = this_fname()
         content_test = Test_SVGDocInScale.TEM1 % (
             '<rect id="Rect_9" x="59.527" y="17.008"'
             ' width="25.512" height="39.685" fill="#8080C0" />')
