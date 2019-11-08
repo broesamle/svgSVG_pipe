@@ -254,6 +254,7 @@ class Test_SVGDocInScale:
                                         content_expect,
                                         write_if_svgout)
 
+    @pytest.mark.xfail
     def test_inject_points_polyline_trafo(self, write_if_svgout):
         vbox = '0 0 200 200'
         addons = 'fill="#2EC" stroke="#C0D" stroke-width="3" opacity="0.7"'
