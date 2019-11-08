@@ -42,7 +42,7 @@ class ExistingDoc(object):
         """
         vbox = self.root.get('viewBox', None)
         if isinstance(vbox, str):
-            coords = re.findall("([^\s,]+)+", vbox)
+            coords = re.findall("([^ \t,]+)+", vbox)
             if len(coords) != 4:
                 raise ParseError("viewBox coordinates not valid: %s" % vbox)
             return list(map(float, coords))
