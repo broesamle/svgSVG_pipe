@@ -31,7 +31,7 @@ def write_if_svgout():
         _panorama_svgfile.write(html_opener)
         def _write_if_svgout(filename, content, newtest=None):
             if newtest is not None:
-                _panorama_svgfile.write("\n<br><b>%s</b><br>\n" % newtest)
+                _panorama_svgfile.write("\n<h3>%s</h3>\n" % newtest)
             item = '<iframe src="{:s}"></iframe>\n'.format(filename)
             _panorama_svgfile.write(item)
             f = codecs.open(os.path.join(_SVG_OUT, filename),
@@ -198,7 +198,7 @@ class Test_SVGDocInScale:
                                         content_expect,
                                         write_if_svgout)
 
-    _POLY_TEM = '<%s id="Poly1" fill="#2E2" stroke="#122" stroke-width="10" points="%s"/>'
+    _POLY_TEM = '<%s id="Poly1" points="%s" %s/>'
     _POLY_POINTS = ('931,2169.304 817.627,2169.285'
                     ' 770.96,2169.285 667.874,2307.31 539.317,2191.927'
                     ' 229.269,2186.255 165,2169.304 57.23,2292.125 '
@@ -206,12 +206,15 @@ class Test_SVGDocInScale:
 
     def test_inject_points_polygon(self, write_if_svgout):
         vbox = '0 2100 1200 300'
+        addons = 'fill="#2E2" stroke="#122" stroke-width="10"'
         poly = Test_SVGDocInScale._POLY_TEM % ("polygon",
-                                  Test_SVGDocInScale._POLY_POINTS)
+                                  Test_SVGDocInScale._POLY_POINTS,
+                                  addons)
         poly_after = Test_SVGDocInScale._POLY_TEM % ("polygon",
                                   '900.54,2000 ' +
                                   Test_SVGDocInScale._POLY_POINTS +
-                                  ' 870,2600.338')
+                                  ' 870,2600.338',
+                                  addons)
 
         content_test = Test_SVGDocInScale.TEM1 % (vbox, poly)
         content_expect = Test_SVGDocInScale.TEM1 % (vbox, poly_after)
@@ -227,12 +230,15 @@ class Test_SVGDocInScale:
 
     def test_inject_points_polyline(self, write_if_svgout):
         vbox = '0 2100 1200 300'
+        addons = 'fill="#2E2" stroke="#122" stroke-width="10"'
         poly = Test_SVGDocInScale._POLY_TEM % ("polyline",
-                                  Test_SVGDocInScale._POLY_POINTS)
+                                  Test_SVGDocInScale._POLY_POINTS,
+                                  addons)
         poly_after = Test_SVGDocInScale._POLY_TEM % ("polyline",
                                   '900.54,2000 ' +
                                   Test_SVGDocInScale._POLY_POINTS +
-                                  ' 870,2600.338')
+                                  ' 870,2600.338',
+                                  addons)
 
         content_test = Test_SVGDocInScale.TEM1 % (vbox, poly)
         content_expect = Test_SVGDocInScale.TEM1 % (vbox, poly_after)
