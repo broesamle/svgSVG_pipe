@@ -11,6 +11,9 @@ import xml.etree.ElementTree as ET
 ET.register_namespace('',"http://www.w3.org/2000/svg")
 ET.register_namespace('xlink',"http://www.w3.org/1999/xlink")
 
+INJ_POS_BEFORE = 1
+INJ_POS_AFTER = 2
+
 class ParseError(Exception):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -81,6 +84,11 @@ class ExistingDoc(object):
                     raise ParseError("Duplicate element with id %s" % id)
                 result[id] = el
         return result
+
+    def get_poly_injectpoint(self, tag, id):
+        """ An `InjectPoint` for polygon/polyline with given `id`."""
+        poly = self.get_svg_element(tag, id)
+        return InjectPoint(poly)
 
     def get_svg_element(self, tag, id):
         """ Return the svg `tag` element with the given `id`.
@@ -247,24 +255,14 @@ class WorldDocTrafo(object):
         """
         raise Exception("Internal error: h2x was not initialized properly. Please contact the administrator ,-)")
 
-class ScaledInjectPoint(WorldDocTrafo):
-    """ Scale and inject SVG content into a target area/element.
 
-        `ScaledInjectPoint` is derived from `WorldDocTrafo`
-        and combines a target SVG element with specific scaling
-        parameters for injecting content into a rectangular
-        target area (e.g. derived from the geometry of the `rect`
-        element or its `viewBox`).
-        """
+class InjectPoint:
+    """Inject content into an _target_ element."""
 
-    def __init__(self, target_element, viewBox, hrange, vrange,
-                 **delta_hv):
-        """ Extends `WorldDocTrafo.__init__`.
+    def __init__(self, target_element):
+        """ `target_element`: An SVG element defining
+            the point where new conted will get injected."""
 
-        `target_element`: An SVG element defining
-            the point where new conted will get injected.
-        """
-        super().__init__(viewBox, hrange, vrange, **delta_hv)
         self.target = target_element
 
     def inject(self, content):
@@ -276,3 +274,35 @@ class ScaledInjectPoint(WorldDocTrafo):
                 self.target.append(ET.fromstring(content))
             except (ET.ParseError, TypeError) as e:
                 raise ParseError("Invalid type or syntax for content %s" % content)
+
+    def inject_points(self, pts, pos=INJ_POS_AFTER):
+        _fmt = "{:.9g},{:.9g}"
+        if 'points' in self.target.attrib:
+            if pos == INJ_POS_BEFORE:
+                self.target.attrib['points'] = " ".join(
+                        [_fmt.format(x,y) for x,y in pts]) \
+                        + " " + self.target.attrib['points']
+            elif pos == INJ_POS_AFTER:
+                self.target.attrib['points'] += " " + " ".join(
+                        [_fmt.format(x,y) for x,y in pts])
+            else:
+                raise NotImplementedError("inject_points does not handle this position: %s" % pos)
+        else:
+            self.target.attrib['points'] = " ".join(
+                    [_fmt.format(x,y) for x,y in pts])
+
+class ScaledInjectPoint(InjectPoint, WorldDocTrafo):
+    """ Scale and inject SVG content into a target area/element.
+
+        `ScaledInjectPoint` is derived from `WorldDocTrafo`
+        and combines a target SVG element with specific scaling
+        parameters for injecting content into a rectangular
+        target area (e.g. derived from the geometry of the `rect`
+        element or its `viewBox`).
+        """
+
+    def __init__(self, target_element, viewBox, hrange, vrange,
+                 **delta_hv):
+        """ Initialises both superclasses."""
+        InjectPoint.__init__(self, target_element)
+        WorldDocTrafo.__init__(self, viewBox, hrange, vrange, **delta_hv)

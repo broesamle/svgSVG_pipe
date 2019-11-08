@@ -221,9 +221,9 @@ class Test_SVGDocInScale:
         svgdoc = Test_SVGDocInScale._prepare(content_test,
                                              content_expect,
                                              write_if_svgout)
-        injp = svgdoc.get_polygon_injectpoint("Poly1")
-        injp.inject_points((900.54, 2000), INJ.INJ_POS_BEFORE)
-        injp.inject_points((870, 2600.338), INJ.INJ_POS_AFTER)
+        injp = svgdoc.get_poly_injectpoint("polygon", "Poly1")
+        injp.inject_points([(900.54, 2000)], INJ.INJ_POS_BEFORE)
+        injp.inject_points([(870, 2600.338)], INJ.INJ_POS_AFTER)
         Test_SVGDocInScale._save_result(svgdoc,
                                         content_expect,
                                         write_if_svgout)
@@ -245,7 +245,7 @@ class Test_SVGDocInScale:
         svgdoc = Test_SVGDocInScale._prepare(content_test,
                                              content_expect,
                                              write_if_svgout)
-        injp = svgdoc.get_poly_injectpoint("Poly1")
+        injp = svgdoc.get_poly_injectpoint("polyline", "Poly1")
         injp.inject_points([(900.54, 2000)],
                            pos=INJ.INJ_POS_BEFORE)
         injp.inject_points([(870, 2600.338)],
@@ -275,7 +275,7 @@ class Test_SVGDocInScale:
         world_left, world_right = world_horiz
         world_top, world_bottom  = world_vert
         trafo = svgdoc.trafo_from_rect("Rect1", world_horiz, world_vert)
-        injp = svgdoc.get_poly_injectpoint("Poly1")
+        injp = svgdoc.get_poly_injectpoint("polyline", "Poly1")
         injp.inject_points([(world_left,world_bottom),
                             (world_right,world_top),
                             (world_right,world_bottom),
