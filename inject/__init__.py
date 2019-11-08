@@ -136,6 +136,27 @@ class SVGDocInScale(ExistingDoc):
                                  hrange, vrange,
                                  **delta_hv)
 
+    def trafo_from_rect(self, id, hrange, vrange, **delta_hv):
+        """ Transformation: World coords into a document area.
+
+        The geometry of the SVG rect with `id` defines the
+        target area in the document, into which the visible
+        area in the world  (given by `hrange` and `vrange`)
+        gets projected.
+
+        `hrange`, `vrange`, `delta_h`, `delta_v`:
+        cf. WorldDocTrafo.
+        """
+        target_el = self.get_svg_element('rect', id)
+        if target_el is None:
+            raise NotFoundError("No `rect` element with id=%s" % id)
+        vbox = list(map(float, (target_el.attrib['x'],
+                                target_el.attrib['y'],
+                                target_el.attrib['width'],
+                                target_el.attrib['height'])))
+        return WorldDocTrafo(vbox, hrange, vrange, **delta_hv)
+
+
     def get_rect_injectpoint(self, id, hrange, vrange, **delta_hv):
         def _rect2group(svgelement, newattribs):
             # FIXME:
@@ -275,7 +296,10 @@ class InjectPoint:
             except (ET.ParseError, TypeError) as e:
                 raise ParseError("Invalid type or syntax for content %s" % content)
 
-    def inject_points(self, pts, pos=INJ_POS_AFTER):
+    def inject_points(self, pts, pos=INJ_POS_AFTER, trafo=None):
+        if trafo is not None:
+            pts = [(trafo.h2x(h),trafo.v2y(v))
+                   for (h,v) in pts]
         _fmt = "{:.9g},{:.9g}"
         if 'points' in self.target.attrib:
             if pos == INJ_POS_BEFORE:
