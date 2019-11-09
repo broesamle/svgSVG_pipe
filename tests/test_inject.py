@@ -285,7 +285,6 @@ class Test_SVGDocInScale:
                                         content_expect,
                                         write_if_svgout)
 
-    @pytest.mark.xfail
     def test_insert_points_polyline_trafo(self, write_if_svgout):
         vbox = '0 0 200 200'
         addons = 'fill="#2EC" stroke="#C0D" stroke-width="3" opacity="0.7"'
@@ -312,7 +311,7 @@ class Test_SVGDocInScale:
         point = (world_right,world_top)
         injp.inject_points_at([(world_right,world_bottom),
                                (world_right,world_top)],
-                              trafo=trafo, idx=4)
+                              trafo=trafo, index=4)
         Test_SVGDocInScale._save_result(svgdoc,
                                         content_expect,
                                         write_if_svgout)
