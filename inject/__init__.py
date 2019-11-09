@@ -283,7 +283,6 @@ class InjectPoint:
     def __init__(self, target_element):
         """ `target_element`: An SVG element defining
             the point where new conted will get injected."""
-
         self.target = target_element
 
     def inject(self, content):
@@ -296,24 +295,49 @@ class InjectPoint:
             except (ET.ParseError, TypeError) as e:
                 raise ParseError("Invalid type or syntax for content %s" % content)
 
+    def _fmtpts(pts):
+        return " ".join(["{:.9g},{:.9g}".format(x,y)
+                         for x,y in pts])
+
     def inject_points(self, pts, pos=INJ_POS_AFTER, trafo=None):
+        """ Inject points into an existing polygon or polyline.
+
+        `pts`: a list of points [(x1,y1), (x2,y2), ...]
+
+        `pos` (optional): Where to insert the new points?
+            `INJ_POS_BEFORE`: before or ...
+            `INJ_POS_AFTER`: ... after the exisiting point data
+
+        `trafo` (optional): Transform point coordinates according
+            to a given `WorldDocTrafo`.
+        """
         if trafo is not None:
             pts = [(trafo.h2x(h),trafo.v2y(v))
                    for (h,v) in pts]
-        _fmt = "{:.9g},{:.9g}"
         if 'points' in self.target.attrib:
             if pos == INJ_POS_BEFORE:
-                self.target.attrib['points'] = " ".join(
-                        [_fmt.format(x,y) for x,y in pts]) \
-                        + " " + self.target.attrib['points']
+                self.target.attrib['points'] = (
+                        InjectPoint._fmtpts(pts) + " "
+                        + self.target.attrib['points'])
             elif pos == INJ_POS_AFTER:
-                self.target.attrib['points'] += " " + " ".join(
-                        [_fmt.format(x,y) for x,y in pts])
+                self.target.attrib['points'] += (
+                        " " + InjectPoint._fmtpts(pts))
             else:
                 raise NotImplementedError("inject_points does not handle this position: %s" % pos)
         else:
-            self.target.attrib['points'] = " ".join(
-                    [_fmt.format(x,y) for x,y in pts])
+            self.target.attrib['points'] = InjectPoint._fmtpts(pts)
+
+    def inject_points_at(self, pts, index=-1, trafo=None):
+        """ Less efficient than `inject_points`, more flexible positioning.
+
+        `idx`: Insert position, cf. `index` in pythons `list.insert`.
+        """
+        if trafo is not None:
+            pts = [(trafo.h2x(h),trafo.v2y(v))
+                   for (h,v) in pts]
+        existpts = self.target.attrib['points'].split()
+        existpts.insert(index, InjectPoint._fmtpts(pts))
+        self.target.attrib['points'] = " ".join(existpts)
 
 class ScaledInjectPoint(InjectPoint, WorldDocTrafo):
     """ Scale and inject SVG content into a target area/element.
