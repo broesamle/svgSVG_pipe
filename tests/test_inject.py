@@ -22,6 +22,9 @@ def write_if_svgout():
 <style>iframe { border:none; }</style>
 </head>
 <body style="font-family: monospace; border: 0px;">
+<h2>Test Panorama</h2>
+<p><b>Insepect test results visually:</b><br>
+[test setup]&nbsp;&nbsp;&nbsp;[expected result]&nbsp;&nbsp;&nbsp;[result]</p>
 """
 
     try:
