@@ -318,7 +318,6 @@ class Test_SVGDocInScale:
                                         content_expect,
                                         write_if_svgout)
 
-    @pytest.mark.xfail
     def test_replace_point_polyline_trafo(self, write_if_svgout):
         vbox = '0 0 200 200'
         addons = 'fill="#2CE" stroke="#C0D" stroke-width="3" opacity="0.7"'
@@ -337,14 +336,14 @@ class Test_SVGDocInScale:
         world_horiz = 1000, 2000
         world_vert = 10, 30
         world_left, world_right = world_horiz
+        world_midx = (world_right + world_left) / 2.0
         world_top, world_bottom  = world_vert
         trafo = svgdoc.trafo_from_rect("Rect1", world_horiz, world_vert)
         injp = svgdoc.get_poly_injectpoint("polyline", "Poly1")
-        point = (world_right,world_top)
-        injp.replace_point_at((world_right,world_bottom),
-                               index=-2, trafo=trafo)
+        injp.replace_point_at((world_midx,world_bottom),
+                              index=1, trafo=trafo)
         injp.replace_point_at((world_right,world_top),
-                               index=1, trafo=trafo)
+                              index=-2, trafo=trafo)
         Test_SVGDocInScale._save_result(svgdoc,
                                         content_expect,
                                         write_if_svgout)

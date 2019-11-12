@@ -339,6 +339,19 @@ class InjectPoint:
         existpts.insert(index, InjectPoint._fmtpts(pts))
         self.target.attrib['points'] = " ".join(existpts)
 
+    def replace_point_at(self, p, index=-1, trafo=None):
+        """ Replace an existing point by a given point `p`.
+
+        `idx`: Position of the point being replaced
+            (cf. `index` in pythons `list.insert`).
+        """
+        if trafo is not None:
+            h, v = p
+            p = trafo.h2x(h), trafo.v2y(v)
+        existpts = self.target.attrib['points'].split()
+        existpts[index] = InjectPoint._fmtpts([p])
+        self.target.attrib['points'] = " ".join(existpts)
+
 class ScaledInjectPoint(InjectPoint, WorldDocTrafo):
     """ Scale and inject SVG content into a target area/element.
 
