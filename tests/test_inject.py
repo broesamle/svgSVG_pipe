@@ -311,10 +311,9 @@ class Test_SVGDocInScale:
         world_top, world_bottom  = world_vert
         trafo = svgdoc.trafo_from_rect("Rect1", world_horiz, world_vert)
         injp = svgdoc.get_poly_injectpoint("polyline", "Poly1")
-        point = (world_right,world_top)
         injp.inject_points_at([(world_right,world_bottom),
                                (world_right,world_top)],
-                              trafo=trafo, index=4)
+                              index=4, trafo=trafo)
         Test_SVGDocInScale._save_result(svgdoc,
                                         content_expect,
                                         write_if_svgout)
@@ -343,9 +342,9 @@ class Test_SVGDocInScale:
         injp = svgdoc.get_poly_injectpoint("polyline", "Poly1")
         point = (world_right,world_top)
         injp.replace_point_at((world_right,world_bottom),
-                           trafo=trafo, index=-2)
+                               index=-2, trafo=trafo)
         injp.replace_point_at((world_right,world_top),
-                           trafo=trafo, index=1)
+                               index=1, trafo=trafo)
         Test_SVGDocInScale._save_result(svgdoc,
                                         content_expect,
                                         write_if_svgout)
