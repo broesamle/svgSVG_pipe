@@ -228,24 +228,25 @@ class Test_SVGDocInScale:
                                         content_expect,
                                         write_if_svgout)
 
-    _POLY_TEM = '<%s id="Poly1" points="%s" %s/>'
+
     _POLY_POINTS = ('931,2169.304 817.627,2169.285'
                     ' 770.96,2169.285 667.874,2307.31 539.317,2191.927'
                     ' 229.269,2186.255 165,2169.304 57.23,2292.125 '
                     ' 57.23,2452.75 930.978,2452.75')
 
+    def _two_poly(tag, points, points_after, addons):
+        _POLY_TEM = '<%s id="Poly1" points="%s" %s/>'
+        return (_POLY_TEM % (tag, points, addons),
+                _POLY_TEM % (tag, points_after, addons))
+
     def test_inject_points_polygon(self, write_if_svgout):
         vbox = '0 2100 1200 300'
         addons = 'fill="#2E2" stroke="#122" stroke-width="10"'
-        poly = Test_SVGDocInScale._POLY_TEM % ("polygon",
-                                  Test_SVGDocInScale._POLY_POINTS,
-                                  addons)
-        poly_after = Test_SVGDocInScale._POLY_TEM % ("polygon",
-                                  '900.54,2000 ' +
-                                  Test_SVGDocInScale._POLY_POINTS +
-                                  ' 870,2600.338',
-                                  addons)
-
+        poly, poly_after = Test_SVGDocInScale._two_poly("polygon",
+                           Test_SVGDocInScale._POLY_POINTS,
+                           '900.54,2000 ' +
+                           Test_SVGDocInScale._POLY_POINTS +
+                           ' 870,2600.338', addons)
         content_test = Test_SVGDocInScale.TEM1 % (vbox, poly)
         content_expect = Test_SVGDocInScale.TEM1 % (vbox, poly_after)
         svgdoc = Test_SVGDocInScale._prepare(content_test,
@@ -261,15 +262,12 @@ class Test_SVGDocInScale:
     def test_inject_points_polyline(self, write_if_svgout):
         vbox = '0 2100 1200 300'
         addons = 'fill="#2E2" stroke="#122" stroke-width="10"'
-        poly = Test_SVGDocInScale._POLY_TEM % ("polyline",
-                                  Test_SVGDocInScale._POLY_POINTS,
-                                  addons)
-        poly_after = Test_SVGDocInScale._POLY_TEM % ("polyline",
-                                  '900.54,2000 ' +
-                                  Test_SVGDocInScale._POLY_POINTS +
-                                  ' 870,2600.338',
-                                  addons)
-
+        poly, poly_after = Test_SVGDocInScale._two_poly("polyline",
+                           Test_SVGDocInScale._POLY_POINTS,
+                           '900.54,2000 ' +
+                           Test_SVGDocInScale._POLY_POINTS +
+                           ' 870,2600.338',
+                           addons)
         content_test = Test_SVGDocInScale.TEM1 % (vbox, poly)
         content_expect = Test_SVGDocInScale.TEM1 % (vbox, poly_after)
         svgdoc = Test_SVGDocInScale._prepare(content_test,
@@ -288,13 +286,10 @@ class Test_SVGDocInScale:
         vbox = '0 0 200 200'
         addons = 'fill="#2EC" stroke="#C0D" stroke-width="3" opacity="0.7"'
         rect = '<rect id="Rect1" x="10" y="30" width="150" height="75" />'
-        poly = Test_SVGDocInScale._POLY_TEM % ("polyline",
-                                               '0,0 100,0 100,10',
-                                               addons)
-        poly_after = Test_SVGDocInScale._POLY_TEM % ("polyline",
-                                               '0,0 100,0 100,10 '
-                                               '10,30 160,105 160,30 10,105',
-                                               addons)
+        poly, poly_after = Test_SVGDocInScale._two_poly("polyline",
+                           '0,0 100,0 100,10',
+                           '0,0 100,0 100,10 10,30 160,105 160,30 10,105',
+                           addons)
         content_test = Test_SVGDocInScale.TEM1 % (vbox, rect+poly)
         content_expect = Test_SVGDocInScale.TEM1 % (vbox, rect+poly_after)
         svgdoc = Test_SVGDocInScale._prepare(content_test,
@@ -319,14 +314,10 @@ class Test_SVGDocInScale:
         vbox = '0 0 200 200'
         addons = 'fill="#2EC" stroke="#C0D" stroke-width="3" opacity="0.7"'
         rect = '<rect id="Rect1" x="10" y="30" width="150" height="75" />'
-        poly = Test_SVGDocInScale._POLY_TEM % ("polyline",
-                                               '0,0 100,0 100,10'
-                                               ' 10,30 10,105',
-                                               addons)
-        poly_after = Test_SVGDocInScale._POLY_TEM % ("polyline",
-                                               '0,0 100,0 100,10'
-                                               ' 10,30 160,105 160,30 10,105',
-                                               addons)
+        poly, poly_after = Test_SVGDocInScale._two_poly("polyline",
+                           '0,0 100,0 100,10 10,30 10,105',
+                           '0,0 100,0 100,10 10,30 160,105 160,30 10,105',
+                           addons)
         content_test = Test_SVGDocInScale.TEM1 % (vbox, rect+poly)
         content_expect = Test_SVGDocInScale.TEM1 % (vbox, rect+poly_after)
         svgdoc = Test_SVGDocInScale._prepare(content_test,
@@ -349,10 +340,8 @@ class Test_SVGDocInScale:
         vbox = '0 0 200 200'
         addons = 'fill="#2CE" stroke="#C0D" stroke-width="3" opacity="0.7"'
         rect = '<rect id="Rect1" x="10" y="30" width="150" height="75" />'
-        poly = Test_SVGDocInScale._POLY_TEM % ("polyline",
+        poly, poly_after = Test_SVGDocInScale._two_poly("polyline",
                                     '10,30 160,30 160,105 10,105',
-                                    addons)
-        poly_after = Test_SVGDocInScale._POLY_TEM % ("polyline",
                                     '10,30 85,105 160,30 10,105',
                                     addons)
         content_test = Test_SVGDocInScale.TEM1 % (vbox, rect+poly)
@@ -379,10 +368,8 @@ class Test_SVGDocInScale:
         vbox = '0 0 200 200'
         addons = 'fill="#3dd" stroke="#C0D" stroke-width="3" opacity="0.7"'
         rect = '<rect id="Rect1" x="10" y="30" width="150" height="75" />'
-        poly = Test_SVGDocInScale._POLY_TEM % ("polyline",
+        poly, poly_after = Test_SVGDocInScale._two_poly("polyline",
                                     '50,30 60,80 80,5 100,105',
-                                    addons)
-        poly_after = Test_SVGDocInScale._POLY_TEM % ("polyline",
                                     '10,30 160,105 160,30 10,105',
                                     addons)
         content_test = Test_SVGDocInScale.TEM1 % (vbox, rect+poly)
@@ -409,10 +396,8 @@ class Test_SVGDocInScale:
         vbox = '0 0 200 200'
         addons = 'fill="#3dd" stroke="#A28" stroke-width="3" opacity="0.7"'
         rect = '<rect id="Rect1" x="10" y="30" width="150" height="75" />'
-        poly = Test_SVGDocInScale._POLY_TEM % ("polyline",
+        poly, poly_after = Test_SVGDocInScale._two_poly("polyline",
                                     '50,30 60,80 80,5 100,105',
-                                    addons)
-        poly_after = Test_SVGDocInScale._POLY_TEM % ("polyline",
                                     '10,30 160,105 160,30 10,105',
                                     addons)
         content_test = Test_SVGDocInScale.TEM1 % (vbox, rect+poly)
