@@ -59,9 +59,7 @@ class ExistingDoc(object):
 
         `id` must me a be a string.
         """
-        ### FIXME: Throw NotFoundError instead of returning None
-        xpath = ".//svg:g[@id='%s']" % id
-        return self.root.find(xpath, ExistingDoc._NS)
+        return self.get_svg_element('g', id)
 
     def get_layers_as_dict(self, ids):
         """ Retrieve all 'layers' with given `ids`.
@@ -97,7 +95,11 @@ class ExistingDoc(object):
         any namespace prefixes. Examples: 'rect', 'g'.
         """
         xpath = ".//svg:%s[@id='%s']" % (tag,id)
-        return self.root.find(xpath, ExistingDoc._NS)
+        svgel = self.root.find(xpath, ExistingDoc._NS)
+        if svgel is None:
+            raise NotFoundError("No '%s' element with id '%s' found."
+                                % (tag,id))
+        return svgel
 
     def save(self, file):
         self.tree.write(file, encoding="utf8")

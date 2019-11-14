@@ -1,4 +1,5 @@
 import codecs
+import datetime
 import io
 import os
 import re
@@ -78,19 +79,45 @@ class Test_ExistingDoc:
      version="1.2"
      viewBox="0 0 2834.646 34.6"
      xml:space="preserve">
-<g id="Layer_A1"></g>
-<g id="Layer_A2"></g>
+<g id="Layer_A1">%s</g>
+<g id="Layer_A2">%s</g>
 </svg>
 """
 
     def test_get_viewbox(self):
-        fileobject = io.StringIO(Test_ExistingDoc.svgdocument1)
+        fileobject = io.StringIO(Test_ExistingDoc.svgdocument1
+                                 % ("",""))
         svgdoc = INJ.ExistingDoc(fileobject)
         x, y, w, h = svgdoc.get_viewbox()
         assert x==0.0
         assert y==0.0
         assert w==2834.646
         assert h==34.6
+
+    def test_get_layer(self):
+        fileobject = io.StringIO(Test_ExistingDoc.svgdocument1
+                                 % ("",""))
+        svgdoc = INJ.ExistingDoc(fileobject)
+        layer = svgdoc.get_layer("Layer_A1")
+        assert type(layer) is not None
+        with pytest.raises(INJ.NotFoundError):
+            svgdoc.get_layer("X")
+
+    def test_get_poly_injectpoint(self):
+        fileobject = io.StringIO(Test_ExistingDoc.svgdocument1
+                                 % ('<polygon id="Poly1"/>',
+                                    '<polyline id="Poly2"/>'))
+        svgdoc = INJ.ExistingDoc(fileobject)
+        poly1 = svgdoc.get_poly_injectpoint('polygon',"Poly1")
+        assert poly1 is not None
+        poly2 = svgdoc.get_poly_injectpoint('polyline',"Poly2")
+        assert poly2 is not None
+        with pytest.raises(INJ.NotFoundError):
+            svgdoc.get_poly_injectpoint("t","X")
+        with pytest.raises(INJ.NotFoundError):
+            svgdoc.get_poly_injectpoint("polygon","Poly2")
+        with pytest.raises(INJ.NotFoundError):
+            svgdoc.get_poly_injectpoint("polyline","Poly1")
 
 class Test_SVGDocInScale:
     TEM1 = """<?xml version='1.0' encoding='utf-8'?>
@@ -374,6 +401,52 @@ class Test_SVGDocInScale:
                                  (world_right,world_top),
                                  (world_left,world_bottom)],
                                 trafo=trafo)
+        Test_SVGDocInScale._save_result(svgdoc,
+                                        content_expect,
+                                        write_if_svgout)
+
+    def test_replace_all_points_deltafn(self, write_if_svgout):
+        vbox = '0 0 200 200'
+        addons = 'fill="#3dd" stroke="#A28" stroke-width="3" opacity="0.7"'
+        rect = '<rect id="Rect1" x="10" y="30" width="150" height="75" />'
+        poly = Test_SVGDocInScale._POLY_TEM % ("polyline",
+                                    '50,30 60,80 80,5 100,105',
+                                    addons)
+        poly_after = Test_SVGDocInScale._POLY_TEM % ("polyline",
+                                    '10,30 160,105 160,30 10,105',
+                                    addons)
+        content_test = Test_SVGDocInScale.TEM1 % (vbox, rect+poly)
+        content_expect = Test_SVGDocInScale.TEM1 % (vbox, rect+poly_after)
+        svgdoc = Test_SVGDocInScale._prepare(content_test,
+                                             content_expect,
+                                             write_if_svgout)
+        world_horiz = 1000,2000
+        world_vert = 10, 30
+        world_left, world_right = world_horiz
+        world_top, world_bottom  = world_vert
+        trafo = svgdoc.trafo_from_rect("Rect1", world_horiz, world_vert)
+        injp = svgdoc.get_poly_injectpoint("polyline", "Poly1")
+        # xxvarnamexx2: using datetime and a custom delta_h
+        world_horiz2 = (datetime.datetime(2015,9,22),
+                       datetime.datetime(2016,2,9))
+        world_left2, world_right2 = world_horiz2
+        trafo2 = svgdoc.trafo_from_rect("Rect1", world_horiz2, world_vert,
+                            delta_h=lambda t1, t2:(t2-t1).total_seconds())
+        with pytest.raises(TypeError):
+            injp.replace_all_points([(world_left2,world_top),
+                                     (world_right,world_bottom),
+                                     (world_right,world_top),
+                                     (world_left,world_bottom)])
+        with pytest.raises(TypeError):
+            injp.replace_all_points([(world_left,world_top),
+                                     (world_right2,world_bottom),
+                                     (world_right,world_top),
+                                     (world_left,world_bottom)])
+        injp.replace_all_points([(world_left2,world_top),
+                                 (world_right2,world_bottom),
+                                 (world_right2,world_top),
+                                 (world_left2,world_bottom)],
+                                trafo=trafo2)
         Test_SVGDocInScale._save_result(svgdoc,
                                         content_expect,
                                         write_if_svgout)
