@@ -352,6 +352,19 @@ class InjectPoint:
         existpts[index] = InjectPoint._fmtpts([p])
         self.target.attrib['points'] = " ".join(existpts)
 
+    def replace_all_points(self, pts, trafo=None):
+        """ Replace all points of an existing polygon or polyline.
+
+        `pts`: list of new points [(x1,y1), (x2,y2), ...]
+
+        `trafo` (optional): Transform point coordinates according
+            to a given `WorldDocTrafo`.
+        """
+        if trafo is not None:
+            pts = [(trafo.h2x(h),trafo.v2y(v))
+                   for (h,v) in pts]
+        self.target.attrib['points'] = InjectPoint._fmtpts(pts)
+
 class ScaledInjectPoint(InjectPoint, WorldDocTrafo):
     """ Scale and inject SVG content into a target area/element.
 
