@@ -298,7 +298,33 @@ class InjectPoint:
                 raise ParseError("Invalid type or syntax for content %s" % content)
 
     def _fmtpts(pts):
-        return " ".join(["{:.9g},{:.9g}".format(x,y)
+        ### FIXME: A non-float argument should fail!
+        ### Should be ok
+        # fmtpts = " ".join(["{:f},{:f}".format(x,y)
+        #                    for x,y in pts])
+        #
+        # but format weirdly accepts datetime for {:g}
+        #
+        # >>> import datetime as DT
+        # >>> DT.datetime(2017,4,6)
+        # datetime.datetime(2017, 4, 6, 0, 0)
+        # >>> "{:.9g}".format(DT.datetime(2017,4,6))
+        # '.9g'
+        #
+        # Workaround 1:
+        #
+        # for x,y, in pts:
+        #     if type(x) is not in  [int, float]:
+        #         raise TypeError("There should not be %s in %s"
+        #                         % (DT.datetime, pts))
+        #     if type(x) is not in  [int, float]:
+        #         raise TypeError("There should not be %s in %s"
+        #                         % (DT.datetime, pts))
+
+        # Workaround 2, use old-fashioned formatting:
+        return " ".join([('%f' % x).rstrip('0').rstrip('.')
+                         + "," +
+                         ('%f' % y).rstrip('0').rstrip('.')
                          for x,y in pts])
 
     def inject_points(self, pts, pos=INJ_POS_AFTER, trafo=None):
