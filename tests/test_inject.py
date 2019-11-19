@@ -435,3 +435,32 @@ class Test_SVGDocInScale:
         Test_SVGDocInScale._save_result(svgdoc,
                                         content_expect,
                                         write_if_svgout)
+
+    def test_replace_all_points_flip_y(self, write_if_svgout):
+        vbox = '0 0 200 200'
+        addons = 'fill="#3dd" stroke="#C0D" stroke-width="3" opacity="0.7"'
+        rect = '<rect id="Rect1" x="10" y="30" width="150" height="75" />'
+        poly, poly_after = Test_SVGDocInScale._two_poly("polyline",
+                                    '50,30 60,80 80,5 100,105',
+                                    '10,30 10,105 160,105',
+                                    addons)
+        content_test = Test_SVGDocInScale.TEM1 % (vbox, rect+poly)
+        content_expect = Test_SVGDocInScale.TEM1 % (vbox, rect+poly_after)
+        svgdoc = Test_SVGDocInScale._prepare(content_test,
+                                             content_expect,
+                                             write_if_svgout)
+        world_horiz = 1000, 2000
+        world_vert = 10, 30
+        world_left, world_right = world_horiz
+        world_top, world_bottom  = world_vert
+        trafo = svgdoc.trafo_from_rect("Rect1",
+                                       world_horiz, world_vert,
+                                       flip_y=True)
+        injp = svgdoc.get_poly_injectpoint("polyline", "Poly1")
+        injp.replace_all_points([(world_left,world_bottom),
+                                 (world_left,world_top),
+                                 (world_right,world_top)],
+                                trafo=trafo)
+        Test_SVGDocInScale._save_result(svgdoc,
+                                        content_expect,
+                                        write_if_svgout)

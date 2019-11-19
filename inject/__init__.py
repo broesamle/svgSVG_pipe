@@ -138,7 +138,8 @@ class SVGDocInScale(ExistingDoc):
                                  hrange, vrange,
                                  **delta_hv)
 
-    def trafo_from_rect(self, id, hrange, vrange, **delta_hv):
+    def trafo_from_rect(self, id, hrange, vrange,
+                        flip_y=False, **delta_hv):
         """ Transformation: World coords into a document area.
 
         The geometry of the SVG rect with `id` defines the
@@ -146,7 +147,7 @@ class SVGDocInScale(ExistingDoc):
         area in the world  (given by `hrange` and `vrange`)
         gets projected.
 
-        `hrange`, `vrange`, `delta_h`, `delta_v`:
+        `hrange`, `vrange`, `flip_y`, `delta_h`, `delta_v`:
         cf. WorldDocTrafo.
         """
         target_el = self.get_svg_element('rect', id)
@@ -156,7 +157,8 @@ class SVGDocInScale(ExistingDoc):
                                 target_el.attrib['y'],
                                 target_el.attrib['width'],
                                 target_el.attrib['height'])))
-        return WorldDocTrafo(vbox, hrange, vrange, **delta_hv)
+        return WorldDocTrafo(vbox, hrange, vrange,
+                             flip_y, **delta_hv)
 
 
     def get_rect_injectpoint(self, id, hrange, vrange, **delta_hv):
@@ -208,7 +210,7 @@ class WorldDocTrafo(object):
         """
 
     def __init__(self, viewbox, hrange, vrange,
-                 delta_h=None, delta_v=None):
+                 flip_y=False, delta_h=None, delta_v=None):
         """ Initialize scale factors and transformation functions.
 
         `viewbox`:  SVG canonical form `(x,y,width,height)`
@@ -248,21 +250,27 @@ class WorldDocTrafo(object):
                               x1=self.x1,  \
                               sc=self.hx_factor : (h-h1)*sc + x1
 
+        if flip_y:
+            self.y1 += height
+            flipfactor_y = -1
+        else:
+            flipfactor_y = 1
         if delta_v is not None:
             # non-trivial delta calculation function
             self.vy_factor = heigth / delta_v(self.v1, self.v2)
-            self.v2y = lambda v,                 \
-                              v1=self.v1,        \
-                              y1=self.y1,        \
-                              sc=self.vy_factor, \
+            self.v2y = lambda v,                              \
+                              v1=self.v1,                     \
+                              y1=self.y1,                     \
+                              sc=self.vy_factor*flipfactor_y, \
                               d=delta_v : d(v1,v)*sc + y1
         else:
             # use simple and fast `-`
             self.vy_factor = height / (self.v2-self.v1)
-            self.v2y = lambda v,          \
-                              v1=self.v1, \
-                              y1=self.y1, \
-                              sc=self.vy_factor : (v-v1)*sc + y1
+            self.v2y = lambda v,                              \
+                              v1=self.v1,                     \
+                              y1=self.y1,                     \
+                              sc=self.vy_factor*flipfactor_y  \
+                              : (v-v1)*sc + y1
 
     def h2x(h):
         """ Horizontal world coords `h` --> document x-coordinates.
