@@ -8,7 +8,7 @@ import xml.dom.minidom as minidom
 
 import pytest
 
-from svgSVG_pipe import inject as INJ
+from svgpipe import inject as INJ
 
 _TEST_SUFFIX = "_test"
 _EXPECT_SUFFIX = "_expect"
