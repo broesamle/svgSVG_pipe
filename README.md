@@ -37,14 +37,27 @@ Currently under development using:
 * Pytest 5.2.2.
 
 
-Tests
------
+Install and test
+----------------
+
+```
+pip install svgpipe
+```
+
+(on Windows with older pythons you may need `python -m pip install svgpipe`)
 
 
 ### run tests
 
+When in the package directory, just type:
 ```
 pytest
+```
+
+When the package was installed via `pip`:
+
+```
+pytest --pyargs svgpipe
 ```
 
 

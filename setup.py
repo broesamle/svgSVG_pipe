@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="svgpipe-BROESAMLE",
+    name="svgpipe",
     version="0.1.0",
     author="Martin Brösamle",
     author_email="m@martinbroesamle.de",
@@ -13,6 +13,11 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/broesamle/svgpipe",
     packages=setuptools.find_packages(),
+    keywords=["svg",
+              "vector graphics",
+              "scalable vector graphics",
+              "xml",
+              "visualisation"],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
