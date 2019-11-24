@@ -8,7 +8,8 @@ import xml.dom.minidom as minidom
 
 import pytest
 
-from svgpipe import inject as INJ
+import svgpipe
+from svgpipe.inject import INJ_POS_AFTER, INJ_POS_BEFORE
 
 _TEST_SUFFIX = "_test"
 _EXPECT_SUFFIX = "_expect"
@@ -71,7 +72,7 @@ def this_fname():
 def caller_fname():
     return traceback.extract_stack(None, 3)[0][2]
 
-class Test_ExistingDoc:
+class Test_SVGDoc:
     svgdocument1 = """<?xml version='1.0' encoding='utf8'?>
 <svg xmlns="http://www.w3.org/2000/svg"
      baseProfile="tiny"
@@ -85,9 +86,9 @@ class Test_ExistingDoc:
 """
 
     def test_get_viewbox(self):
-        fileobject = io.StringIO(Test_ExistingDoc.svgdocument1
+        fileobject = io.StringIO(Test_SVGDoc.svgdocument1
                                  % ("",""))
-        svgdoc = INJ.ExistingDoc(fileobject)
+        svgdoc = svgpipe.SVGDoc(fileobject)
         x, y, w, h = svgdoc.get_viewbox()
         assert x==0.0
         assert y==0.0
@@ -95,31 +96,31 @@ class Test_ExistingDoc:
         assert h==34.6
 
     def test_get_layer(self):
-        fileobject = io.StringIO(Test_ExistingDoc.svgdocument1
+        fileobject = io.StringIO(Test_SVGDoc.svgdocument1
                                  % ("",""))
-        svgdoc = INJ.ExistingDoc(fileobject)
+        svgdoc = svgpipe.SVGDoc(fileobject)
         layer = svgdoc.get_layer("Layer_A1")
         assert type(layer) is not None
-        with pytest.raises(INJ.NotFoundError):
+        with pytest.raises(svgpipe.NotFoundError):
             svgdoc.get_layer("X")
 
     def test_get_poly_injectpoint(self):
-        fileobject = io.StringIO(Test_ExistingDoc.svgdocument1
+        fileobject = io.StringIO(Test_SVGDoc.svgdocument1
                                  % ('<polygon id="Poly1"/>',
                                     '<polyline id="Poly2"/>'))
-        svgdoc = INJ.ExistingDoc(fileobject)
+        svgdoc = svgpipe.inject.SVGDocInj(fileobject)
         poly1 = svgdoc.get_poly_injectpoint('polygon',"Poly1")
         assert poly1 is not None
         poly2 = svgdoc.get_poly_injectpoint('polyline',"Poly2")
         assert poly2 is not None
-        with pytest.raises(INJ.NotFoundError):
+        with pytest.raises(svgpipe.NotFoundError):
             svgdoc.get_poly_injectpoint("t","X")
-        with pytest.raises(INJ.NotFoundError):
+        with pytest.raises(svgpipe.NotFoundError):
             svgdoc.get_poly_injectpoint("polygon","Poly2")
-        with pytest.raises(INJ.NotFoundError):
+        with pytest.raises(svgpipe.NotFoundError):
             svgdoc.get_poly_injectpoint("polyline","Poly1")
 
-class Test_SVGDocInScale:
+class Test_SVGDocInj:
     TEM1 = """<?xml version='1.0' encoding='utf-8'?>
 <svg version="1.2" baseProfile="tiny" xmlns="http://www.w3.org/2000/svg"
  x="0px" y="0px" width="90.71px" height="68.03px" viewBox="%s">
@@ -135,7 +136,7 @@ class Test_SVGDocInScale:
                  newtest=testname)
         write_if(testname+_EXPECT_SUFFIX+_SVG_EXT, content_expect)
         infile = io.StringIO(content_test)
-        svgdoc = INJ.SVGDocInScale(infile)
+        svgdoc = svgpipe.inject.SVGDocInj(infile)
         return svgdoc
 
     def _save_result(svgdoc, content_expect, write_if):
@@ -150,17 +151,17 @@ class Test_SVGDocInScale:
 
     def test_inject_into_layer(self, write_if_svgout):
         vbox = '0 10 90.71 68.03'
-        content_test = Test_SVGDocInScale.TEM1 % (vbox,
+        content_test = Test_SVGDocInj.TEM1 % (vbox,
             '<rect x="59.527" y="17.008"'
             ' width="25.512" height="39.685" fill="#8080C0" />')
-        content_expect = Test_SVGDocInScale.TEM1 % (vbox,
+        content_expect = Test_SVGDocInj.TEM1 % (vbox,
             '<rect x="59.527" y="17.008"'
             ' width="25.512" height="39.685" fill="#8080C0" />'
             '<rect x="0" y="10" width="90.71" height="68.03"'
             ' fill="#00CC44" opacity="0.4" />'
             '<line x1="0" y1="10" x2="90.71" y2="78.03"'
             ' stroke="black" />')
-        svgdoc = Test_SVGDocInScale._prepare(content_test,
+        svgdoc = Test_SVGDocInj._prepare(content_test,
                                              content_expect,
                                              write_if_svgout)
         world_horiz = (-10,20)
@@ -187,13 +188,13 @@ class Test_SVGDocInScale:
                 ' stroke="black" />').format(x1doc, y1doc,
                                              x2doc, y2doc)
         injp.inject(line)
-        Test_SVGDocInScale._save_result(svgdoc,
+        Test_SVGDocInj._save_result(svgdoc,
                                         content_expect,
                                         write_if_svgout)
 
     def test_inject_into_rect(self, write_if_svgout):
         vbox = '0 10 90.71 68.03'
-        content_test = Test_SVGDocInScale.TEM1 % (vbox,
+        content_test = Test_SVGDocInj.TEM1 % (vbox,
             '<rect id="Rect_9" x="59.527" y="17.008"'
             ' width="25.512" height="39.685" fill="#8080C0" />')
         newrect = ('<rect x="59.527" y="17.008" width="25.512"'
@@ -206,9 +207,9 @@ class Test_SVGDocInScale:
             '<rect id="Rect_9" x="59.527" y="17.008" width="25.512"'
             ' height="39.685" fill="#8080C0" opacity="0.452"/>' +
             newrect+newline + '</g>')
-        content_expect = Test_SVGDocInScale.TEM1 % (vbox,
+        content_expect = Test_SVGDocInj.TEM1 % (vbox,
                                                     after_injection)
-        svgdoc = Test_SVGDocInScale._prepare(content_test,
+        svgdoc = Test_SVGDocInj._prepare(content_test,
                                              content_expect,
                                              write_if_svgout)
         world_left, world_width = (59.527, 25.512)
@@ -224,7 +225,7 @@ class Test_SVGDocInScale:
         y2doc = injp.v2y(world_bottom)
         injp.inject(newrect)
         injp.inject(newline)
-        Test_SVGDocInScale._save_result(svgdoc,
+        Test_SVGDocInj._save_result(svgdoc,
                                         content_expect,
                                         write_if_svgout)
 
@@ -242,43 +243,43 @@ class Test_SVGDocInScale:
     def test_inject_points_polygon(self, write_if_svgout):
         vbox = '0 2100 1200 300'
         addons = 'fill="#2E2" stroke="#122" stroke-width="10"'
-        poly, poly_after = Test_SVGDocInScale._two_poly("polygon",
-                           Test_SVGDocInScale._POLY_POINTS,
+        poly, poly_after = Test_SVGDocInj._two_poly("polygon",
+                           Test_SVGDocInj._POLY_POINTS,
                            '900.54,2000 ' +
-                           Test_SVGDocInScale._POLY_POINTS +
+                           Test_SVGDocInj._POLY_POINTS +
                            ' 870,2600.338', addons)
-        content_test = Test_SVGDocInScale.TEM1 % (vbox, poly)
-        content_expect = Test_SVGDocInScale.TEM1 % (vbox, poly_after)
-        svgdoc = Test_SVGDocInScale._prepare(content_test,
+        content_test = Test_SVGDocInj.TEM1 % (vbox, poly)
+        content_expect = Test_SVGDocInj.TEM1 % (vbox, poly_after)
+        svgdoc = Test_SVGDocInj._prepare(content_test,
                                              content_expect,
                                              write_if_svgout)
         injp = svgdoc.get_poly_injectpoint("polygon", "Poly1")
-        injp.inject_points([(900.54, 2000)], INJ.INJ_POS_BEFORE)
-        injp.inject_points([(870, 2600.338)], INJ.INJ_POS_AFTER)
-        Test_SVGDocInScale._save_result(svgdoc,
+        injp.inject_points([(900.54, 2000)], INJ_POS_BEFORE)
+        injp.inject_points([(870, 2600.338)], INJ_POS_AFTER)
+        Test_SVGDocInj._save_result(svgdoc,
                                         content_expect,
                                         write_if_svgout)
 
     def test_inject_points_polyline(self, write_if_svgout):
         vbox = '0 2100 1200 300'
         addons = 'fill="#2E2" stroke="#122" stroke-width="10"'
-        poly, poly_after = Test_SVGDocInScale._two_poly("polyline",
-                           Test_SVGDocInScale._POLY_POINTS,
+        poly, poly_after = Test_SVGDocInj._two_poly("polyline",
+                           Test_SVGDocInj._POLY_POINTS,
                            '900.54,2000 ' +
-                           Test_SVGDocInScale._POLY_POINTS +
+                           Test_SVGDocInj._POLY_POINTS +
                            ' 870,2600.338',
                            addons)
-        content_test = Test_SVGDocInScale.TEM1 % (vbox, poly)
-        content_expect = Test_SVGDocInScale.TEM1 % (vbox, poly_after)
-        svgdoc = Test_SVGDocInScale._prepare(content_test,
+        content_test = Test_SVGDocInj.TEM1 % (vbox, poly)
+        content_expect = Test_SVGDocInj.TEM1 % (vbox, poly_after)
+        svgdoc = Test_SVGDocInj._prepare(content_test,
                                              content_expect,
                                              write_if_svgout)
         injp = svgdoc.get_poly_injectpoint("polyline", "Poly1")
         injp.inject_points([(900.54, 2000)],
-                           pos=INJ.INJ_POS_BEFORE)
+                           pos=INJ_POS_BEFORE)
         injp.inject_points([(870, 2600.338)],
-                           pos=INJ.INJ_POS_AFTER)
-        Test_SVGDocInScale._save_result(svgdoc,
+                           pos=INJ_POS_AFTER)
+        Test_SVGDocInj._save_result(svgdoc,
                                         content_expect,
                                         write_if_svgout)
 
@@ -286,13 +287,13 @@ class Test_SVGDocInScale:
         vbox = '0 0 200 200'
         addons = 'fill="#2EC" stroke="#C0D" stroke-width="3" opacity="0.7"'
         rect = '<rect id="Rect1" x="10" y="30" width="150" height="75" />'
-        poly, poly_after = Test_SVGDocInScale._two_poly("polyline",
+        poly, poly_after = Test_SVGDocInj._two_poly("polyline",
                            '0,0 100,0 100,10',
                            '0,0 100,0 100,10 10,30 160,105 160,30 10,105',
                            addons)
-        content_test = Test_SVGDocInScale.TEM1 % (vbox, rect+poly)
-        content_expect = Test_SVGDocInScale.TEM1 % (vbox, rect+poly_after)
-        svgdoc = Test_SVGDocInScale._prepare(content_test,
+        content_test = Test_SVGDocInj.TEM1 % (vbox, rect+poly)
+        content_expect = Test_SVGDocInj.TEM1 % (vbox, rect+poly_after)
+        svgdoc = Test_SVGDocInj._prepare(content_test,
                                              content_expect,
                                              write_if_svgout)
         world_horiz = 1000, 2000
@@ -306,7 +307,7 @@ class Test_SVGDocInScale:
                             (world_right,world_top),
                             (world_left,world_bottom)],
                             trafo=trafo)
-        Test_SVGDocInScale._save_result(svgdoc,
+        Test_SVGDocInj._save_result(svgdoc,
                                         content_expect,
                                         write_if_svgout)
 
@@ -314,13 +315,13 @@ class Test_SVGDocInScale:
         vbox = '0 0 200 200'
         addons = 'fill="#2EC" stroke="#C0D" stroke-width="3" opacity="0.7"'
         rect = '<rect id="Rect1" x="10" y="30" width="150" height="75" />'
-        poly, poly_after = Test_SVGDocInScale._two_poly("polyline",
+        poly, poly_after = Test_SVGDocInj._two_poly("polyline",
                            '0,0 100,0 100,10 10,30 10,105',
                            '0,0 100,0 100,10 10,30 160,105 160,30 10,105',
                            addons)
-        content_test = Test_SVGDocInScale.TEM1 % (vbox, rect+poly)
-        content_expect = Test_SVGDocInScale.TEM1 % (vbox, rect+poly_after)
-        svgdoc = Test_SVGDocInScale._prepare(content_test,
+        content_test = Test_SVGDocInj.TEM1 % (vbox, rect+poly)
+        content_expect = Test_SVGDocInj.TEM1 % (vbox, rect+poly_after)
+        svgdoc = Test_SVGDocInj._prepare(content_test,
                                              content_expect,
                                              write_if_svgout)
         world_horiz = 1000, 2000
@@ -332,7 +333,7 @@ class Test_SVGDocInScale:
         injp.inject_points_at([(world_right,world_bottom),
                                (world_right,world_top)],
                               index=4, trafo=trafo)
-        Test_SVGDocInScale._save_result(svgdoc,
+        Test_SVGDocInj._save_result(svgdoc,
                                         content_expect,
                                         write_if_svgout)
 
@@ -340,13 +341,13 @@ class Test_SVGDocInScale:
         vbox = '0 0 200 200'
         addons = 'fill="#2CE" stroke="#C0D" stroke-width="3" opacity="0.7"'
         rect = '<rect id="Rect1" x="10" y="30" width="150" height="75" />'
-        poly, poly_after = Test_SVGDocInScale._two_poly("polyline",
+        poly, poly_after = Test_SVGDocInj._two_poly("polyline",
                                     '10,30 160,30 160,105 10,105',
                                     '10,30 85,105 160,30 10,105',
                                     addons)
-        content_test = Test_SVGDocInScale.TEM1 % (vbox, rect+poly)
-        content_expect = Test_SVGDocInScale.TEM1 % (vbox, rect+poly_after)
-        svgdoc = Test_SVGDocInScale._prepare(content_test,
+        content_test = Test_SVGDocInj.TEM1 % (vbox, rect+poly)
+        content_expect = Test_SVGDocInj.TEM1 % (vbox, rect+poly_after)
+        svgdoc = Test_SVGDocInj._prepare(content_test,
                                              content_expect,
                                              write_if_svgout)
         world_horiz = 1000, 2000
@@ -360,7 +361,7 @@ class Test_SVGDocInScale:
                               index=1, trafo=trafo)
         injp.replace_point_at((world_right,world_top),
                               index=-2, trafo=trafo)
-        Test_SVGDocInScale._save_result(svgdoc,
+        Test_SVGDocInj._save_result(svgdoc,
                                         content_expect,
                                         write_if_svgout)
 
@@ -368,13 +369,13 @@ class Test_SVGDocInScale:
         vbox = '0 0 200 200'
         addons = 'fill="#3dd" stroke="#C0D" stroke-width="3" opacity="0.7"'
         rect = '<rect id="Rect1" x="10" y="30" width="150" height="75" />'
-        poly, poly_after = Test_SVGDocInScale._two_poly("polyline",
+        poly, poly_after = Test_SVGDocInj._two_poly("polyline",
                                     '50,30 60,80 80,5 100,105',
                                     '10,30 160,105 160,30 10,105',
                                     addons)
-        content_test = Test_SVGDocInScale.TEM1 % (vbox, rect+poly)
-        content_expect = Test_SVGDocInScale.TEM1 % (vbox, rect+poly_after)
-        svgdoc = Test_SVGDocInScale._prepare(content_test,
+        content_test = Test_SVGDocInj.TEM1 % (vbox, rect+poly)
+        content_expect = Test_SVGDocInj.TEM1 % (vbox, rect+poly_after)
+        svgdoc = Test_SVGDocInj._prepare(content_test,
                                              content_expect,
                                              write_if_svgout)
         world_horiz = 1000, 2000
@@ -388,7 +389,7 @@ class Test_SVGDocInScale:
                                  (world_right,world_top),
                                  (world_left,world_bottom)],
                                 trafo=trafo)
-        Test_SVGDocInScale._save_result(svgdoc,
+        Test_SVGDocInj._save_result(svgdoc,
                                         content_expect,
                                         write_if_svgout)
 
@@ -396,13 +397,13 @@ class Test_SVGDocInScale:
         vbox = '0 0 200 200'
         addons = 'fill="#3dd" stroke="#A28" stroke-width="3" opacity="0.7"'
         rect = '<rect id="Rect1" x="10" y="30" width="150" height="75" />'
-        poly, poly_after = Test_SVGDocInScale._two_poly("polyline",
+        poly, poly_after = Test_SVGDocInj._two_poly("polyline",
                                     '50,30 60,80 80,5 100,105',
                                     '10,30 160,105 160,30 10,105',
                                     addons)
-        content_test = Test_SVGDocInScale.TEM1 % (vbox, rect+poly)
-        content_expect = Test_SVGDocInScale.TEM1 % (vbox, rect+poly_after)
-        svgdoc = Test_SVGDocInScale._prepare(content_test,
+        content_test = Test_SVGDocInj.TEM1 % (vbox, rect+poly)
+        content_expect = Test_SVGDocInj.TEM1 % (vbox, rect+poly_after)
+        svgdoc = Test_SVGDocInj._prepare(content_test,
                                              content_expect,
                                              write_if_svgout)
         world_horiz = 1000,2000
@@ -432,7 +433,7 @@ class Test_SVGDocInScale:
                                  (world_right2,world_top),
                                  (world_left2,world_bottom)],
                                 trafo=trafo2)
-        Test_SVGDocInScale._save_result(svgdoc,
+        Test_SVGDocInj._save_result(svgdoc,
                                         content_expect,
                                         write_if_svgout)
 
@@ -440,13 +441,13 @@ class Test_SVGDocInScale:
         vbox = '0 0 200 200'
         addons = 'fill="#3dd" stroke="#C0D" stroke-width="3" opacity="0.7"'
         rect = '<rect id="Rect1" x="10" y="30" width="150" height="75" />'
-        poly, poly_after = Test_SVGDocInScale._two_poly("polyline",
+        poly, poly_after = Test_SVGDocInj._two_poly("polyline",
                                     '50,30 60,80 80,5 100,105',
                                     '10,30 10,105 160,105',
                                     addons)
-        content_test = Test_SVGDocInScale.TEM1 % (vbox, rect+poly)
-        content_expect = Test_SVGDocInScale.TEM1 % (vbox, rect+poly_after)
-        svgdoc = Test_SVGDocInScale._prepare(content_test,
+        content_test = Test_SVGDocInj.TEM1 % (vbox, rect+poly)
+        content_expect = Test_SVGDocInj.TEM1 % (vbox, rect+poly_after)
+        svgdoc = Test_SVGDocInj._prepare(content_test,
                                              content_expect,
                                              write_if_svgout)
         world_horiz = 1000, 2000
@@ -461,6 +462,6 @@ class Test_SVGDocInScale:
                                  (world_left,world_top),
                                  (world_right,world_top)],
                                 trafo=trafo)
-        Test_SVGDocInScale._save_result(svgdoc,
+        Test_SVGDocInj._save_result(svgdoc,
                                         content_expect,
                                         write_if_svgout)
