@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="svgpipe",
-    version="0.1.0",
+    version="0.2.0",
     author="Martin Brösamle",
     author_email="m@martinbroesamle.de",
     description="Transactions on existing SVG documents: inject/extract/modify",
