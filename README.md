@@ -3,6 +3,8 @@
 `svg|pipe` Transactions for existing SVG documents
 ==================================================
 
+**Note:** *The project is in an early stage of development. 0.x.x versions do not garantee a stable API.*
+
 `inject` data and SVG content into an existing document, keeping its structure intact.
 
 `extract` data and SVG content from an existing document (planned).
