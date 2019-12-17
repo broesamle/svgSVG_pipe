@@ -9,7 +9,7 @@
 
 `extract` data and SVG content from an existing document (planned).
 
-`transfer` data, attributes, etc. between existing SVG elements (planned).
+`transfer` data, attributes, etc. between existing SVG elements (work in progress).
 
 
 Motivation
@@ -27,7 +27,9 @@ The project wants to facilitate transactions on existing documents for graphics-
 Philosophy
 ----------
 
-`svg|pipe` not only uses SVG documents for import/export of graphical content into/from some existing stock of data. SVG documents are XML documents and can serve as data structures themselves.
+`svg|pipe` belongs to a series of experimental technical projects that rethink established conceptions of data and visualisation technologies; more on [visuelle-maschine.de](https://visuelle-maschine.de/index-en.html). SVG documents are XML documents and play a double-role as visualisation and data structure. `svg|pipe` imports/exports graphical content into/from SVG documents that serve as first order data structures themselves.
+
+
 
 
 Requirements and Installation
