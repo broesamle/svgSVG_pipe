@@ -40,7 +40,7 @@ class SVGDoc_Tester:
 <g id="Layer_A">%s</g>
 </svg>
 """
-    def _prepareSVGDoc(content_test, content_expect, write_if):
+    def _prepare_svgdoc(content_test, content_expect, write_if):
         testname = caller_fname()
         write_if(testname+_TEST_SUFFIX+_SVG_EXT,
                  content_test,

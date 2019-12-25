@@ -68,9 +68,9 @@ class Test_SVGDocInj(TU.SVGDoc_Tester):
             ' fill="#00CC44" opacity="0.4" />'
             '<line x1="0" y1="10" x2="90.71" y2="78.03"'
             ' stroke="black" />')
-        svgdoc = TU.SVGDoc_Tester._prepareSVGDoc(content_test,
-                                                 content_expect,
-                                                 write_if_svgout)
+        svgdoc = TU.SVGDoc_Tester._prepare_svgdoc(content_test,
+                                                  content_expect,
+                                                  write_if_svgout)
         world_horiz = (-10,20)
         world_left, world_right = world_horiz
         world_width = world_right - world_left
@@ -116,9 +116,9 @@ class Test_SVGDocInj(TU.SVGDoc_Tester):
             newrect+newline + '</g>')
         content_expect = TU.SVGDoc_Tester.TEM1 % (vbox,
                                                   after_injection)
-        svgdoc = TU.SVGDoc_Tester._prepareSVGDoc(content_test,
-                                                 content_expect,
-                                                 write_if_svgout)
+        svgdoc = TU.SVGDoc_Tester._prepare_svgdoc(content_test,
+                                                  content_expect,
+                                                  write_if_svgout)
         world_left, world_width = (59.527, 25.512)
         world_right = world_left + world_width
         world_top, world_height = (17.008, 39.685)
@@ -157,9 +157,9 @@ class Test_SVGDocInj(TU.SVGDoc_Tester):
                            ' 870,2600.338', addons)
         content_test = TU.SVGDoc_Tester.TEM1 % (vbox, poly)
         content_expect = TU.SVGDoc_Tester.TEM1 % (vbox, poly_after)
-        svgdoc = TU.SVGDoc_Tester._prepareSVGDoc(content_test,
-                                                 content_expect,
-                                                 write_if_svgout)
+        svgdoc = TU.SVGDoc_Tester._prepare_svgdoc(content_test,
+                                                  content_expect,
+                                                  write_if_svgout)
         injp = svgdoc.get_poly_injectpoint("polygon", "Poly1")
         injp.inject_points([(900.54, 2000)], INJ_POS_BEFORE)
         injp.inject_points([(870, 2600.338)], INJ_POS_AFTER)
@@ -178,9 +178,9 @@ class Test_SVGDocInj(TU.SVGDoc_Tester):
                            addons)
         content_test = TU.SVGDoc_Tester.TEM1 % (vbox, poly)
         content_expect = TU.SVGDoc_Tester.TEM1 % (vbox, poly_after)
-        svgdoc = TU.SVGDoc_Tester._prepareSVGDoc(content_test,
-                                                 content_expect,
-                                                 write_if_svgout)
+        svgdoc = TU.SVGDoc_Tester._prepare_svgdoc(content_test,
+                                                  content_expect,
+                                                  write_if_svgout)
         injp = svgdoc.get_poly_injectpoint("polyline", "Poly1")
         injp.inject_points([(900.54, 2000)],
                            pos=INJ_POS_BEFORE)
@@ -200,9 +200,9 @@ class Test_SVGDocInj(TU.SVGDoc_Tester):
                            addons)
         content_test = TU.SVGDoc_Tester.TEM1 % (vbox, rect+poly)
         content_expect = TU.SVGDoc_Tester.TEM1 % (vbox, rect+poly_after)
-        svgdoc = TU.SVGDoc_Tester._prepareSVGDoc(content_test,
-                                                 content_expect,
-                                                 write_if_svgout)
+        svgdoc = TU.SVGDoc_Tester._prepare_svgdoc(content_test,
+                                                  content_expect,
+                                                  write_if_svgout)
         world_horiz = 1000, 2000
         world_vert = 10, 30
         world_left, world_right = world_horiz
@@ -228,9 +228,9 @@ class Test_SVGDocInj(TU.SVGDoc_Tester):
                            addons)
         content_test = TU.SVGDoc_Tester.TEM1 % (vbox, rect+poly)
         content_expect = TU.SVGDoc_Tester.TEM1 % (vbox, rect+poly_after)
-        svgdoc = TU.SVGDoc_Tester._prepareSVGDoc(content_test,
-                                                 content_expect,
-                                                 write_if_svgout)
+        svgdoc = TU.SVGDoc_Tester._prepare_svgdoc(content_test,
+                                                  content_expect,
+                                                  write_if_svgout)
         world_horiz = 1000, 2000
         world_vert = 10, 30
         world_left, world_right = world_horiz
@@ -254,9 +254,9 @@ class Test_SVGDocInj(TU.SVGDoc_Tester):
                                     addons)
         content_test = TU.SVGDoc_Tester.TEM1 % (vbox, rect+poly)
         content_expect = TU.SVGDoc_Tester.TEM1 % (vbox, rect+poly_after)
-        svgdoc = TU.SVGDoc_Tester._prepareSVGDoc(content_test,
-                                                 content_expect,
-                                                 write_if_svgout)
+        svgdoc = TU.SVGDoc_Tester._prepare_svgdoc(content_test,
+                                                  content_expect,
+                                                  write_if_svgout)
         world_horiz = 1000, 2000
         world_vert = 10, 30
         world_left, world_right = world_horiz
@@ -282,9 +282,9 @@ class Test_SVGDocInj(TU.SVGDoc_Tester):
                                     addons)
         content_test = TU.SVGDoc_Tester.TEM1 % (vbox, rect+poly)
         content_expect = TU.SVGDoc_Tester.TEM1 % (vbox, rect+poly_after)
-        svgdoc = TU.SVGDoc_Tester._prepareSVGDoc(content_test,
-                                                 content_expect,
-                                                 write_if_svgout)
+        svgdoc = TU.SVGDoc_Tester._prepare_svgdoc(content_test,
+                                                  content_expect,
+                                                  write_if_svgout)
         world_horiz = 1000, 2000
         world_vert = 10, 30
         world_left, world_right = world_horiz
@@ -310,9 +310,9 @@ class Test_SVGDocInj(TU.SVGDoc_Tester):
                                     addons)
         content_test = TU.SVGDoc_Tester.TEM1 % (vbox, rect+poly)
         content_expect = TU.SVGDoc_Tester.TEM1 % (vbox, rect+poly_after)
-        svgdoc = TU.SVGDoc_Tester._prepareSVGDoc(content_test,
-                                                 content_expect,
-                                                 write_if_svgout)
+        svgdoc = TU.SVGDoc_Tester._prepare_svgdoc(content_test,
+                                                  content_expect,
+                                                  write_if_svgout)
         world_horiz = 1000,2000
         world_vert = 10, 30
         world_left, world_right = world_horiz
@@ -354,9 +354,9 @@ class Test_SVGDocInj(TU.SVGDoc_Tester):
                                     addons)
         content_test = TU.SVGDoc_Tester.TEM1 % (vbox, rect+poly)
         content_expect = TU.SVGDoc_Tester.TEM1 % (vbox, rect+poly_after)
-        svgdoc = TU.SVGDoc_Tester._prepareSVGDoc(content_test,
-                                                 content_expect,
-                                                 write_if_svgout)
+        svgdoc = TU.SVGDoc_Tester._prepare_svgdoc(content_test,
+                                                  content_expect,
+                                                  write_if_svgout)
         world_horiz = 1000, 2000
         world_vert = 10, 30
         world_left, world_right = world_horiz
