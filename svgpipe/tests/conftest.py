@@ -2,7 +2,7 @@ import codecs
 import os
 import pytest
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def write_if_svgout():
     html_opener = """<!DOCTYPE html>
 <html><head>
