@@ -7,14 +7,6 @@ import svgpipe.transfer as TRA
 import svgpipe.tests.utils as TU
 
 class Test_SVGDocInj(TU.SVGDoc_Tester):
-    TEM1 = """<?xml version='1.0' encoding='utf-8'?>
-<svg version="1.2" baseProfile="tiny" xmlns="http://www.w3.org/2000/svg"
- x="0px" y="0px" width="90.71px" height="68.03px" viewBox="%s">
-<g id="Layer_B"></g>
-<g id="Layer_A">%s</g>
-</svg>
-"""
-
     def _prepare_proto(attr_proto, attr_target, attr_target_after):
         vbox = '0 0 200 200'
         proto = ('<rect id="P" x="30" y="30" width="50" height="50" '
